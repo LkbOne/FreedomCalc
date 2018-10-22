@@ -50,13 +50,13 @@ public class TestService {
     }
     public ConsumerBook addExpense(Expense expense){
 
-        ConsumerBook consumerBook =consumerBookDao.consumerBookByName("bb");
-        consumerBook.getExpense().add(expense);
+        ConsumerBook consumerBook1 =consumerBookDao.consumerBookByName("bb");
+        consumerBook1.getExpense().add(expense);
 //        consumerBookDao.saveConsumerBook(consumerBook);
 //        expense.setConsumerBook(consumerBook);
         expenseDao.saveExpense(expense);
 
-        return consumerBook;
+        return consumerBook1;
     }
 //    public ConsumerBook modifyExense(){
 //
