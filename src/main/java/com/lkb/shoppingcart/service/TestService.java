@@ -32,11 +32,7 @@ public class TestService {
 //        return "success";
 //    }
     public ConsumerBook createConsumerBook(String name){
-        ConsumerBook consumerBook = new ConsumerBook(name);
-//        System.out.println("CostType"+ consumerBook.getBudget().getName());
-        System.out.println("CostType"+ consumerBook.getExpense().isEmpty());
-        long id = 1;
-        consumerBook.setBudget(budgetDao.budgetById(id));
+        ConsumerBook consumerBook = new ConsumerBook();
         consumerBookDao.saveConsumerBook(consumerBook);
         return consumerBook;
     }
@@ -44,6 +40,8 @@ public class TestService {
 //
 //    }
     public boolean addBudget(Budget budget){
+        ConsumerBook consumerBook =consumerBookDao.consumerBookByName("bb");
+        budget.setConsumerBook(consumerBook);
         return budgetDao.saveBudget(budget);
     }
     public boolean findBudget(Long id){
@@ -51,10 +49,13 @@ public class TestService {
         return true;
     }
     public ConsumerBook addExpense(Expense expense){
-        expenseDao.saveExpense(expense);
+
         ConsumerBook consumerBook =consumerBookDao.consumerBookByName("bb");
         consumerBook.getExpense().add(expense);
         consumerBookDao.saveConsumerBook(consumerBook);
+        expense.setConsumerBook(consumerBook);
+        expenseDao.saveExpense(expense);
+
         return consumerBook;
     }
 //    public ConsumerBook modifyExense(){
