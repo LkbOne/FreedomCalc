@@ -1,6 +1,7 @@
 package com.lkb.shoppingcart.controller;
 
 import com.lkb.shoppingcart.bean.Budget;
+import com.lkb.shoppingcart.bean.ConsumerBook;
 import com.lkb.shoppingcart.bean.Expense;
 import com.lkb.shoppingcart.service.TestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,31 +31,26 @@ public class TestController {
 //    @RequestMapping(method = RequestMethod.POST)
 //    String createConsumerBook(@RequestBody String name){
 //    }
-    @RequestMapping(value = "/budget", method = RequestMethod.POST)
-    String getProductName(@RequestBody Budget budget){
-        System.out.println("budget:"+budget);
-        testService.addBudget(budget);
+    @RequestMapping(value = "/budget/{consumerBookId}", method = RequestMethod.POST)
+    String addBudget(@PathVariable ("consumerBookId")Long consumerBookId,@RequestBody Budget budget){
+        testService.addBudget(budget,consumerBookId);
         return "success";
     }
 
-    @RequestMapping(value = "/budget/{id}", method = RequestMethod.GET)
-    String getProductName(@PathVariable("id") Long id){
-        System.out.println("id:"+id);
-        testService.findBudget(id);
-        return "success";
+    @RequestMapping(value = "/{consumerBookId}", method = RequestMethod.GET)
+    ConsumerBook getConsumerBook(@PathVariable("consumerBookId") Long consumerBookId){
+//        System.out.println("consumerBookId"+consumerBookId);
+//        return testService.findConsumerBook(consumerBookId);
+        return testService.findConsumerBook(consumerBookId);
+
     }
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    String createConsumerBook(@RequestBody String name){
-        System.out.println("name:"+name);
-        testService.createConsumerBook(name);
-        return "success";
+    ConsumerBook createConsumerBook(@RequestBody String name){
+         return testService.createConsumerBook(name);
     }
-
-    @RequestMapping(value = "/{name}", method = RequestMethod.POST)
-    String addExpense2ConsumerBook(@PathVariable ("name")String name,@RequestBody Expense expense){
-        System.out.println("name:"+name);
-        System.out.println("expense:"+expense.getCostType());
-        testService.addExpense(expense);
+    @RequestMapping(value = "/Expense/{consumerBookId}", method = RequestMethod.POST)
+    String addExpense2ConsumerBook(@PathVariable ("consumerBookId")Long consumerBookId,@RequestBody Expense expense){
+        testService.addExpense(expense,consumerBookId);
         return "success";
     }
 }

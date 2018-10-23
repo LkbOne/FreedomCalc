@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Component
 @Service
 public class TestService {
@@ -33,30 +35,44 @@ public class TestService {
 //    }
     public ConsumerBook createConsumerBook(String name){
         ConsumerBook consumerBook = new ConsumerBook();
+        consumerBook.setName(name);
         consumerBookDao.saveConsumerBook(consumerBook);
         return consumerBook;
     }
 //    public ConsumerBook modifyConsumerBook(String book){
 //
 //    }
-    public boolean addBudget(Budget budget){
-        ConsumerBook consumerBook =consumerBookDao.consumerBookByName("bb");
+    public boolean addBudget(Budget budget,Long consumerBook_id){
+        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
         budget.setConsumerBook(consumerBook);
         return budgetDao.saveBudget(budget);
     }
-    public boolean findBudget(Long id){
-        Budget budget=budgetDao.budgetById(id);
-        return true;
+    public ConsumerBook findConsumerBook(Long consumerBook_id){
+        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
+        return fileter(consumerBook);
     }
-    public ConsumerBook addExpense(Expense expense){
-
-        ConsumerBook consumerBook2 =consumerBookDao.consumerBookByName("bb");
-        consumerBook2.getExpense().add(expense);
+    public ConsumerBook fileter(ConsumerBook consumerBook){
+        List<Expense> expenses = consumerBook.getExpense();
+        for(int i=0;i<expenses.size();i++){
+            Expense expense = expenses.get(i);
+            expense.setConsumerBook(null);
+            expenses.set(i,expense);
+        }
+        consumerBook.setExpense(expenses);
+        if(consumerBook.getBudget()!=null){
+            Budget budget = consumerBook.getBudget();
+            budget.setConsumerBook(null);
+            consumerBook.setBudget(budget);
+        }
+        return consumerBook;
+    }
+    public ConsumerBook addExpense(Expense expense,Long consumerBook_id){
+        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
+//        consumerBook.getExpense().add(expense);
 //        consumerBookDao.saveConsumerBook(consumerBook);
-//        expense.setConsumerBook(consumerBook);
+        expense.setConsumerBook(consumerBook);
         expenseDao.saveExpense(expense);
-
-        return consumerBook2;
+        return consumerBook;
     }
 //    public ConsumerBook modifyExense(){
 //
