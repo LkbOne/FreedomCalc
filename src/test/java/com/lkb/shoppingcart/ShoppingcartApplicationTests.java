@@ -45,7 +45,8 @@ public class ShoppingcartApplicationTests {
         Expense expense = new Expense();
         expense.setCostType("消费");
         expense.setDescr("wahaha");
-        expense.setIncomeOrOutcome("income");
+        expense.setExpense(0.5);
+        expense.setIncomeOrOutcome("支出");
         expense.setName("test");
         String result = template.postForObject(url,expense, String.class);
         Assert.assertEquals(result, "success");

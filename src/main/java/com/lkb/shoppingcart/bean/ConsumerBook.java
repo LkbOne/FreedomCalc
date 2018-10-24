@@ -1,5 +1,7 @@
 package com.lkb.shoppingcart.bean;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,4 +34,5 @@ public class ConsumerBook implements Serializable {
         this.expense =expense;
         this.name = name;
     }
+
 }

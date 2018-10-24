@@ -1,5 +1,6 @@
 package com.lkb.shoppingcart.bean;
 
+import com.google.gson.annotations.Expose;
 import com.lkb.shoppingcart.common.time.TimeHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class Budget implements Serializable {
     public Budget(){
         this.beginTime = TimeHelper.timeStamp2Date(String.valueOf(System.currentTimeMillis()),"yyyy-MM-dd HH:mm:ss");
     }
+    @Expose(serialize = false)
     @OneToOne
     @JoinColumn(name = "consumerBook_id")
     private ConsumerBook consumerBook;
