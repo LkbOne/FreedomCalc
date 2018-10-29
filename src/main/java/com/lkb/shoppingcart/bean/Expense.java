@@ -1,5 +1,6 @@
 package com.lkb.shoppingcart.bean;
 
+import com.google.gson.annotations.Expose;
 import lombok.Getter;
 import lombok.Setter;
 

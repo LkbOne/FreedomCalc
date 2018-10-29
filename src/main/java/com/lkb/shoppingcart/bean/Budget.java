@@ -1,9 +1,9 @@
 package com.lkb.shoppingcart.bean;
 
+import com.google.gson.annotations.Expose;
 import com.lkb.shoppingcart.common.time.TimeHelper;
 import lombok.Getter;
 import lombok.Setter;
-
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -11,20 +11,23 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Entity
-//@Table(name="budget")
+// @Table(name="budget")
 public class Budget implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String name="aa";
-    private double budget=0;
-    private String beginTime="";
-    private String endTime="";
+    private String name = "";
+    private double budget = 0;
+    private String beginTime = "";
+    private String endTime = "";
     private double leftBudget = 0;
-    private String descr="";
+    private String descr = "";
     public Budget(){
-        this.beginTime = TimeHelper.timeStamp2Date(String.valueOf(System.currentTimeMillis()),"yyyy-MM-dd HH:mm:ss");
+        beginTime = TimeHelper.timeStamp2Date(String.valueOf(System.currentTimeMillis()),"yyyy-MM-dd HH:mm:ss");
+        endTime =TimeHelper.calcFieldTime(2,"yyyy-MM-dd HH:mm:ss");
     }
+
+    @Expose(serialize = false)
     @OneToOne
     @JoinColumn(name = "consumerBook_id")
     private ConsumerBook consumerBook;

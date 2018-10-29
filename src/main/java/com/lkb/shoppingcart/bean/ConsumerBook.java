@@ -1,5 +1,7 @@
 package com.lkb.shoppingcart.bean;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +20,7 @@ public class ConsumerBook implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @OneToMany(mappedBy = "consumerBook")
-    private Set<Expense> expense;
+    private List<Expense> expense;
     @OneToOne(mappedBy = "consumerBook")
     private Budget budget;
     private String name;
@@ -26,10 +28,11 @@ public class ConsumerBook implements Serializable {
     public ConsumerBook(String name){
         this.name = name;
     }
-    public ConsumerBook(long id,Set<Expense> expense,Budget budget,String name){
+    public ConsumerBook(long id,List<Expense> expense,Budget budget,String name){
         this.id = id;
         this.budget =budget;
         this.expense =expense;
         this.name = name;
     }
+
 }
