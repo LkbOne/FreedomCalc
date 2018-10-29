@@ -22,35 +22,27 @@ public class TestService {
     ConsumerBookDao consumerBookDao;
     @Autowired
     ExpenseDao expenseDao;
-//    Product product = new Product();
-//    public Product product(){
-//        return product;
-//    }
-//    public String setProductName(String name){
-//        product.setName(name);
-//        return "success";
-//    }
-//    public String setProjectPrice(Double price){
-//        product.setPrice(price);
-//        return "success";
-//    }
     public ConsumerBook createConsumerBook(String name){
         ConsumerBook consumerBook = new ConsumerBook();
         consumerBook.setName(name);
         consumerBookDao.saveConsumerBook(consumerBook);
         return consumerBook;
     }
-//    public ConsumerBook modifyConsumerBook(String book){
-//
-//    }
+    // i need a budget type perfer to number of int
+    // need to discuss
     public boolean addBudget(Budget budget,Long consumerBook_id){
-        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
+        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
         budget.setConsumerBook(consumerBook);
         budget.setLeftBudget(budget.getBudget());
+        if(consumerBook.getExpense()!=null&&consumerBook.getExpense().size()>0){
+            for(int i=0;i<consumerBook.getExpense().size();i++) {
+                budget = calcBudget(budget, consumerBook.getExpense().get(i));
+            }
+        }
         return budgetDao.saveBudget(budget);
     }
     public ConsumerBook findConsumerBook(Long consumerBook_id){
-        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
+        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
          return fileter(consumerBook);
     }
     public ConsumerBook fileter(ConsumerBook consumerBook){
@@ -74,15 +66,17 @@ public class TestService {
         if(incomeOrOutcome.equals("收入")){
             left=budget.getLeftBudget()+expense.getExpense();
         }else if(incomeOrOutcome.equals("支出")){
-            left =budget.getLeftBudget()- expense.getExpense();
+            left = budget.getLeftBudget() - expense.getExpense();
         }
         budget.setLeftBudget(left);
         return budget;
     }
 
     public ConsumerBook addExpense(Expense expense,Long consumerBook_id){
-        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
-        budgetDao.saveBudget(calcBudget(consumerBook.getBudget(),expense));
+        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
+        if(consumerBook.getBudget() != null) {
+            budgetDao.saveBudget(calcBudget(consumerBook.getBudget(), expense));
+        }
         expense.setConsumerBook(consumerBook);
         expenseDao.saveExpense(expense);
         return consumerBook;
@@ -92,17 +86,17 @@ public class TestService {
         for(int i=0;i<expenses.size();i++){
             Expense expense = expenses.get(i);
             if(expense.getIncomeOrOutcome().equals("收入")){
-                calcMoney[0]+=expense.getExpense();
+                calcMoney[0] += expense.getExpense();
             }else if(expense.getIncomeOrOutcome().equals("支出")){
-                calcMoney[1]+=expense.getExpense();
+                calcMoney[1] += expense.getExpense();
             }
         }
         return calcMoney;
     }
     public Map<String,Object> calcOutcomeAndIncome(List<Expense> expenses){
         Map<String,Object> map = new HashMap<>();
-        List<Expense> outCome=new ArrayList<>();
-        List<Expense> inCome=new ArrayList<>();
+        List<Expense> outCome = new ArrayList<>();
+        List<Expense> inCome = new ArrayList<>();
         for(int i=0;i<expenses.size();i++){
             Expense expense = expenses.get(i);
             expense.setConsumerBook(null);
@@ -117,15 +111,15 @@ public class TestService {
         map.put("InComeList",inCome);
         map.put("InCome",incomeOrOutComeMoney[0]);
         map.put("OutCome",incomeOrOutComeMoney[1]);
-        map.put("AllIncome",incomeOrOutComeMoney[0]-incomeOrOutComeMoney[1]);
+        map.put("AllIncome",incomeOrOutComeMoney[0] - incomeOrOutComeMoney[1]);
         return map;
     }
     public Map<String,Object> expenseOfComsumerBook(Long consumerBook_id){
-        ConsumerBook consumerBook =consumerBookDao.consumerBookById(consumerBook_id);
+        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
         return calcOutcomeAndIncome(consumerBook.getExpense());
     }
     public List<Map<String, String>> allConsumerBookIdAndName(){
-        Iterator<ConsumerBook> iterator=consumerBookDao.findAllIdAndName();
+        Iterator<ConsumerBook> iterator = consumerBookDao.findAllIdAndName();
         List<Map<String,String>> list = new ArrayList<>();
         while(iterator.hasNext()){
             ConsumerBook consumerBook = iterator.next();

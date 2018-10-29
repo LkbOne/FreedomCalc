@@ -1,11 +1,13 @@
 package com.lkb.shoppingcart.common.time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 public class TimeHelper {
+
     public String calcDiff(long now,long before){
         return String.valueOf((now-before)/1000);
     }
@@ -44,5 +46,20 @@ public class TimeHelper {
         int a = Integer.parseInt(month);
         String[] abbreviateMonth =new String[]{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
         return abbreviateMonth[a];
+    }
+    // timeFormat : "yyyy-MM-dd HH:mm" or "yyyy-MM-dd"
+    public static String getNowTime(String timeFormat){
+        Calendar calendar=Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat(timeFormat);
+        return format.format(calendar.getTime());
+    }
+//     calc interval time for time
+    // YEAR =1 MONTH=2 DAY_OF_MONTH=6 HOUR =10
+    public static String calcFieldTime(int field,String timeFormat){
+        Calendar calendar=Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat(timeFormat);
+        calendar.add(field,1);
+        return format.format(calendar.getTime());
+
     }
 }

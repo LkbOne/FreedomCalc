@@ -24,6 +24,7 @@ public class TestController {
         testService.addBudget(budget,consumerBookId);
         return "success";
     }
+
     @RequestMapping(value = "/{consumerBookId}", method = RequestMethod.GET)
     ConsumerBook getConsumerBook(@PathVariable("consumerBookId") Long consumerBookId){
         return testService.findConsumerBook(consumerBookId);
@@ -37,6 +38,7 @@ public class TestController {
         return testService.allConsumerBookIdAndName();
     }
     @RequestMapping(value = "/", method = RequestMethod.POST)
+
     ConsumerBook createConsumerBook(@RequestBody String name){
          return testService.createConsumerBook(name);
     }
