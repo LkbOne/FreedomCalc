@@ -1,16 +1,18 @@
 package com.lkb.shoppingcart.service;
 
-import com.lkb.shoppingcart.bean.Budget;
-import com.lkb.shoppingcart.bean.ConsumerBook;
-import com.lkb.shoppingcart.bean.Expense;
-import com.lkb.shoppingcart.dao.BudgetDao;
-import com.lkb.shoppingcart.dao.ConsumerBookDao;
-import com.lkb.shoppingcart.dao.ExpenseDao;
+import com.lkb.shoppingcart.bean.*;
+import com.lkb.shoppingcart.common.time.TimeHelper;
+import com.lkb.shoppingcart.dao.*;
+import com.lkb.shoppingcart.dataPackage.ConsumerBookPackage;
+import com.lkb.shoppingcart.dataPackage.ExpenseNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.*;
 
 @Component
@@ -20,8 +22,12 @@ public class TestService {
     BudgetDao budgetDao;
     @Autowired
     ConsumerBookDao consumerBookDao;
+//    @Autowired
+//    ExpenseDao expenseDao;
     @Autowired
-    ExpenseDao expenseDao;
+    IncomeDao incomeDao;
+    @Autowired
+    OutcomeDao outcomeDao;
     public ConsumerBook createConsumerBook(String name){
         ConsumerBook consumerBook = new ConsumerBook();
         consumerBook.setName(name);
@@ -34,89 +40,63 @@ public class TestService {
         ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
         budget.setConsumerBook(consumerBook);
         budget.setLeftBudget(budget.getBudget());
-        if(consumerBook.getExpense()!=null&&consumerBook.getExpense().size()>0){
-            for(int i=0;i<consumerBook.getExpense().size();i++) {
-                budget = calcBudget(budget, consumerBook.getExpense().get(i));
-            }
+        if(consumerBook.getOutcome()!=null&&consumerBook.getOutcome().size()>0){
+                budget = calcBudget(budget, consumerBook);
         }
         return budgetDao.saveBudget(budget);
     }
-    public ConsumerBook findConsumerBook(Long consumerBook_id){
-        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
-         return fileter(consumerBook);
+    public ConsumerBookPackage findConsumerBook(Long consumerBook_id) throws ParseException {
+         ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
+         return new ConsumerBookPackage(fileter(consumerBook),getExpenseForTimeStamp(TimeHelper.getTimeStamp(-6)));
     }
     public ConsumerBook fileter(ConsumerBook consumerBook){
-        List<Expense> expenses = consumerBook.getExpense();
-        for(int i=0;i<expenses.size();i++){
-            Expense expense = expenses.get(i);
-            expense.setConsumerBook(null);
-            expenses.set(i,expense);
-        }
-        consumerBook.setExpense(expenses);
-        if(consumerBook.getBudget()!=null){
-            Budget budget = consumerBook.getBudget();
-            budget.setConsumerBook(null);
-            consumerBook.setBudget(budget);
-        }
+        consumerBook.setComsumerBookOfIncome2Null();
+        consumerBook.setComsumerBookOfOutcome2Null();
+        consumerBook.setComsumerOfBudget2Null();
+        consumerBook.setOutcome(consumerBook.reverseOutcome());
+        consumerBook.setIncome(consumerBook.reverseIncome());
         return consumerBook;
     }
-    public Budget calcBudget(Budget budget,Expense expense){
-        String incomeOrOutcome = expense.getIncomeOrOutcome();
-        double left=budget.getLeftBudget();
-        if(incomeOrOutcome.equals("收入")){
-            left=budget.getLeftBudget()+expense.getExpense();
-        }else if(incomeOrOutcome.equals("支出")){
-            left = budget.getLeftBudget() - expense.getExpense();
-        }
-        budget.setLeftBudget(left);
+    public Budget calcBudget(Budget budget,ConsumerBook consumerBook){
+        budget.setLeftBudget(budget.getLeftBudget() - consumerBook.calcOutcome());
         return budget;
     }
     public ConsumerBook addExpense(Expense expense,Long consumerBook_id){
         ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
         if(consumerBook.getBudget() != null) {
-            budgetDao.saveBudget(calcBudget(consumerBook.getBudget(), expense));
+            budgetDao.saveBudget(calcBudget(consumerBook.getBudget(), consumerBook));
         }
         expense.setConsumerBook(consumerBook);
-        expenseDao.saveExpense(expense);
+        if(expense.getIncomeOrOutcome().equals("income")){
+            incomeDao.saveIncome(new Income(expense));
+        }else{
+            outcomeDao.saveOutcome(new Outcome(expense));
+        }
+
         return consumerBook;
     }
-    public double[] calcMoney(List<Expense> expenses){
-        double[] calcMoney = new double[]{0,0};
-        for(int i=0;i<expenses.size();i++){
-            Expense expense = expenses.get(i);
-            if(expense.getIncomeOrOutcome().equals("收入")){
-                calcMoney[0] += expense.getExpense();
-            }else if(expense.getIncomeOrOutcome().equals("支出")){
-                calcMoney[1] += expense.getExpense();
-            }
-        }
-        return calcMoney;
-    }
-    public Map<String,Object> calcOutcomeAndIncome(List<Expense> expenses){
+    public Map<String,Object> calcOutcomeAndIncome(ConsumerBook consumerBook){
         Map<String,Object> map = new HashMap<>();
-        List<Expense> outCome = new ArrayList<>();
-        List<Expense> inCome = new ArrayList<>();
-        for(int i=0;i<expenses.size();i++){
-            Expense expense = expenses.get(i);
-            expense.setConsumerBook(null);
-            if(expense.getIncomeOrOutcome().equals("收入")){
-                inCome.add(expense);
-            }else if(expense.getIncomeOrOutcome().equals("支出")){
-                outCome.add(expense);
-            }
-        }
-        double[] incomeOrOutComeMoney = calcMoney(expenses);
-        map.put("OutComeList",outCome);
-        map.put("InComeList",inCome);
-        map.put("InCome",incomeOrOutComeMoney[0]);
-        map.put("OutCome",incomeOrOutComeMoney[1]);
-        map.put("AllIncome",incomeOrOutComeMoney[0] - incomeOrOutComeMoney[1]);
+        double incomeOfAll = consumerBook.calcIncome();
+        double outcomeOfAll = consumerBook.calcOutcome();
+        consumerBook.setComsumerBookOfIncome2Null();
+        consumerBook.setComsumerBookOfOutcome2Null();
+        map.put("OutComeList",consumerBook.getOutcome());
+        map.put("InComeList",consumerBook.getIncome());
+        map.put("InCome",incomeOfAll);
+        map.put("OutCome",outcomeOfAll);
+        map.put("AllIncome",incomeOfAll - outcomeOfAll);
         return map;
     }
     public Map<String,Object> expenseOfComsumerBook(Long consumerBook_id){
         ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
-        return calcOutcomeAndIncome(consumerBook.getExpense());
+        return calcOutcomeAndIncome(consumerBook);
     }
+    public Map<String,Object> expenseOfComsumerBook2Pie(Long consumerBook_id){
+        ConsumerBook consumerBook = consumerBookDao.consumerBookById(consumerBook_id);
+        return consumerBook.pieMap();
+    }
+
     public List<Map<String, String>> allConsumerBookIdAndName(){
         Iterator<ConsumerBook> iterator = consumerBookDao.findAllIdAndName();
         List<Map<String,String>> list = new ArrayList<>();
@@ -135,5 +115,27 @@ public class TestService {
 //    public ConsumerBook modifyBudget(){
 //
 //    }
-
+    public List getExpenseForTimeStamp(Timestamp timestamp ) throws ParseException {
+        List<Income> incomes=consumerBookDao.findByTimestamp(timestamp);
+        int j = 0;
+        List<ExpenseNode> expenseNodes = new ArrayList<>();
+        for(int i = 0;i>= -6;i--){
+            Date date000 = TimeHelper.nowDateFor000(i);
+            long dataForMil = date000.getTime();
+            List<Income> dataPackageIncome = new ArrayList<>();
+            for(;j<incomes.size();j++){
+                Income aIncome = incomes.get(j);
+                long incomeTime = aIncome.getTime().getTime();
+                if(incomeTime >= dataForMil){
+                    dataPackageIncome.add(aIncome);
+                    continue;
+                }
+                break;
+            }
+            ExpenseNode expenseNode = new ExpenseNode(date000);
+            expenseNode.setExpenseList(dataPackageIncome);
+            expenseNodes.add(expenseNode);
+        }
+        return expenseNodes;
+    }
 }

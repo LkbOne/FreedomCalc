@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BudgetRepository extends PagingAndSortingRepository<Budget,Long> {
-    List<Budget> findByName(String name);
+//    List<Budget> findByName(String name);
 }
