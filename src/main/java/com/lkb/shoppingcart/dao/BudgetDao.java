@@ -8,9 +8,9 @@ import org.springframework.stereotype.Repository;
 public class BudgetDao {
     @Autowired
     BudgetRepository budgetRepository;
-    public Budget budgetByName(String name){
-        return budgetRepository.findByName(name).get(0);
-    }
+//    public Budget budgetByName(String name){
+//        return budgetRepository.findByName(name).get(0);
+//    }
     public Budget budgetById(Long id){
         return budgetRepository.findById(id).get();
     }
